@@ -39,6 +39,11 @@ void setup() {
   
   Serial.begin(9600);
 
+    TCCR1B = TCCR1B & B11111000 | B00000001;      // Set PWM frequency for D9 & D10:
+    pinMode(9, OUTPUT); // Sets the pin as output
+    pinMode(10, OUTPUT); // Sets the pin as output
+    
+
   //***Define Fuzzy Inputs***
   
   //Current Error I_ref-I_meas
@@ -141,6 +146,8 @@ void setup() {
 
 void loop() {
 
+  I_meas = analogRead(0);
+  I_meas = map(I_meas,0,1023,0,200);
   eI[1] = eI[2];                                //eI[2] is current error at time step eI[1] is that of the previous time-step
   eI[2] = I_ref-I_meas;                         // eI = I*-I
   deI = eI[2]-eI[1];                            // current-error change
@@ -153,7 +160,7 @@ void loop() {
     D+=dd;                                      //Update value of duty cycle D=Dold + d
   }
   else{                                        //Current error is within range of hysteretic controller
-    S = I_meas<=I_ref-Ib;
+    S = I_meas<=I_ref-Ib;                      //S-R flip flop
     R = I_meas>=I_ref+Ib;
     if(S) D=1;
     if(R) D=0;
